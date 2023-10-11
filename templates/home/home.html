@@ -4,6 +4,13 @@
 {% block body %}
 <div class="slider-with-banner">
     <div class="container">
+        {% if messages %}
+        <ul class="messages" style="color:green; font-size:25px;">
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <div class="row">
             <!-- Begin Category Menu Area -->
             <div class="col-lg-3">

@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Profile
 
 # Create your views here.
-def forget_password(request):
-    return render(request, 'accounts/forget_password.html')
-
 
 def sign_in(request):
     if request.user.is_authenticated:
@@ -66,3 +67,27 @@ def sign_up(request):
 def sign_out(request):
     auth.logout(request)
     return redirect('signin')
+
+def forget_password(request):
+    otp = random.randint(1111,9999)
+    if request.method == "POST":
+        email = request.POST.get('email')
+        send_mail_registration(email, otp)
+        user = User.objects.get(email=email)
+        if user:
+            prof = Profile(user = user, otp = otp)
+            prof.save()
+        return redirect('verify_otp')
+
+    return render(request, 'accounts/forget_password.html')
+
+def verify_otp(request): 
+    return render(request, 'accounts/verify_otp.html')
+
+
+def send_mail_registration(email, otp):
+    subject = "Account Verification otp"
+    message = f'hi your verify otp is: {otp}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    send_mail(subject, message, email_from, recipient_list)

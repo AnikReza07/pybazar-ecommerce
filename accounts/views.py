@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
+from django.contrib.auth import update_session_auth_hash
 import random
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Profile
+
 
 # Create your views here.
 
@@ -59,6 +61,8 @@ def sign_up(request):
                         user.save()
                         messages.success(request, "User Created.")
                         return redirect('signin')
+                else:
+                    messages.warning(request, "Password Not Matched.")
             else:
                 messages.warning(request, "Enter a special character in Password.!")
 
@@ -75,13 +79,29 @@ def forget_password(request):
         send_mail_registration(email, otp)
         user = User.objects.get(email=email)
         if user:
-            prof = Profile(user = user, otp = otp)
+            prof = Profile(user=user, otp=otp)
             prof.save()
         return redirect('verify_otp')
 
     return render(request, 'accounts/forget_password.html')
 
-def verify_otp(request): 
+def verify_otp(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        password = request.POST['password']
+        otp = request.POST['otp']
+        user = User.objects.get(email=email)
+        if user:
+            prof = Profile.objects.get(user=user)
+            if prof.otp == otp:
+                user.set_password(password)
+                user.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "User Password Changed.")
+                return redirect('signin')
+            else:
+                messages.success(request, "Otp not matched try again.")
+
     return render(request, 'accounts/verify_otp.html')
 
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import forget_password,sign_in,sign_up,sign_out,verify_otp
+from .views import forget_password, sign_in, sign_up, sign_out, verify_otp
 
 urlpatterns = [
     path('signin/', sign_in, name ='signin'),
